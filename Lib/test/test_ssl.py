@@ -2354,7 +2354,6 @@ class SimpleBackgroundTests(unittest.TestCase):
         # In nonblocking mode, we should be able to read all four in a single
         # drop of the GIL.
         size = 65536
-        trips = []
 
         client_context, server_context, hostname = testing_context()
         server = ThreadedEchoServer(context=server_context, chatty=False,
@@ -2364,7 +2363,7 @@ class SimpleBackgroundTests(unittest.TestCase):
             sock.settimeout(0.0)
             s = client_context.wrap_socket(sock, server_hostname=hostname,
                                            do_handshake_on_connect=False)
-
+            s.eager_recv = True
             with s:
                 while True:
                     try:
@@ -2391,7 +2390,7 @@ class SimpleBackgroundTests(unittest.TestCase):
                             return
                         size -= count
 
-            raise AssertionError("All TLS reads were smaller than 16KB")
+            self.fail("All TLS reads were smaller than 16KB")
 
 
 @support.requires_resource('network')
